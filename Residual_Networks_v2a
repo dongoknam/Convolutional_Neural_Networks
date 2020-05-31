@@ -147,8 +147,6 @@ def convolutional_block(X, f, filters, stage, block, s = 2):
 
 # 4. Building your first ResNet model (50 layers)
 
-# GRADED FUNCTION: ResNet50
-
 def ResNet50(input_shape = (64, 64, 3), classes = 6):
     """
     Implementation of the popular ResNet50 the following architecture:
@@ -166,7 +164,6 @@ def ResNet50(input_shape = (64, 64, 3), classes = 6):
     # Define the input as a tensor with shape input_shape
     X_input = Input(input_shape)
 
-    
     # Zero-Padding
     X = ZeroPadding2D((3, 3))(X_input)
     
@@ -210,8 +207,7 @@ def ResNet50(input_shape = (64, 64, 3), classes = 6):
     # output layer
     X = Flatten()(X)
     X = Dense(classes, activation='softmax', name='fc' + str(classes), kernel_initializer = glorot_uniform(seed=0))(X)
-    
-    
+   
     # Create model
     model = Model(inputs = X_input, outputs = X, name='ResNet50')
 
