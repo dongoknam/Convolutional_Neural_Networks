@@ -1,4 +1,7 @@
-#Load packages
+#code reference : https://www.tensorflow.org/guide/keras/train_and_evaluate
+#study source : https://www.coursera.org/learn/convolutional-neural-networks/home/welcome
+
+# Load packages
 
 import numpy as np
 from keras import layers
@@ -9,6 +12,7 @@ from keras.preprocessing import image
 from keras.utils import layer_utils
 from keras.utils.data_utils import get_file
 from keras.applications.imagenet_utils import preprocess_input
+
 import pydot
 from IPython.display import SVG
 from keras.utils.vis_utils import model_to_dot
@@ -22,5 +26,128 @@ from matplotlib.pyplot import imshow
 
 %matplotlib inline
 
+# Emotion Tracking
+# record local residents' emotions and classify
+# 'happy' or 'not happy'
 
-#Emotion Tracking
+X_train_orig, Y_train_orig, X_test_orig, Y_test_orig, classes = load_dataset()
+
+#Normalize image vectors
+X_train = X_train_orig/255.
+X_test = X_test_orig/255.
+
+#Reshape
+Y_train = Y_train_orig.T
+Y_test = Y_test_orig.T
+
+print ("number of training examples = " + str(X_train.shape[0]))
+print ("number of test examples = " + str(X_test.shape[0]))
+print ("X_train shape: " + str(X_train.shape))
+print ("Y_train shape: " + str(Y_train.shape))
+print ("X_test shape: " + str(X_test.shape))
+print ("Y_test shape: " + str(Y_test.shape))
+
+
+#2. Building a model in Keras
+# Structure of model
+# 1) define the input place holder as a tensor with shape input_shape. Think of this as your input image.
+# 2) Zero-padding
+# 3) CONV -> BN(Batch Normalization) -> RELU block applied to X
+# 4) MAXPOOL
+# 5) FLATTEN X (convert it to a vector) -> FULLYCONNECTED
+# 6) Creat model. (ex. model = Model(inputs = X_input, outputs = X, name = 'HappyModel')
+# Keras re-uses and overwrites the same variable at each step
+
+# GRADED FUNCTION: HappyModel
+
+def HappyModel(input_shape):
+    """
+    Implementation of the HappyModel.
+    
+    Arguments:
+    input_shape -- shape of the images of the dataset
+        (height, width, channels) as a tuple.  
+        Note that this does not include the 'batch' as a dimension.
+        If you have a batch like 'X_train', 
+        then you can provide the input_shape using
+        X_train.shape[1:]
+
+    Returns:
+    model -- a Model() instance in Keras
+    """
+    
+    ### START CODE HERE ###
+    # Feel free to use the suggested outline in the text above to get started, and run through the whole
+    # exercise (including the later portions of this notebook) once. The come back also try out other
+    # network architectures as well. 
+    
+    #Define the input placeholder as a tensor with shape input_shape. Think of this as your input image!
+    X_input = Input(input_shape)
+
+    # Zero-Padding: pads the border of X_input with zeroes
+    X = ZeroPadding2D((3, 3))(X_input)
+
+    # CONV -> BN -> RELU Block applied to X
+    X = Conv2D(32, (7, 7), strides = (1, 1), name = 'conv0')(X)
+    X = BatchNormalization(axis = 3, name = 'bn0')(X)
+    X = Activation('relu')(X)
+
+    # MAXPOOL
+    X = MaxPooling2D((2, 2), name='max_pool')(X)
+
+    # FLATTEN X (means convert it to a vector) + FULLYCONNECTED
+    X = Flatten()(X)
+    X = Dense(1, activation='sigmoid', name='fc')(X)
+
+    model = Model(inputs = X_input, outputs = X, name='HappyModel')
+    
+    ### END CODE HERE ###
+    
+    return model
+    
+# 1. create the model
+happyModel = HappyModel(X_train.shape[1:])
+
+# 2. compile the model
+opt = optimizers.Adam()
+happyModel.compile(loss='binary_crossentropy', optimizer=opt)
+
+# 3. Train the model
+training = happyModel.fit(X_train, Y_train,
+                    batch_size=64,
+                    epochs=3)
+                    
+# 4. Evaluate model
+preds = happyModel.evaluate(X_test, Y_test, batch_size=128)
+print('predictions loss, test acc:', preds)
+
+
+# Conclusion
+# key points to remember
+# 1. create
+# 2. compile
+# 3. fit/train
+# 4. evaluate / test
+
+
+# Test with your own image
+img_path = 'images/my_image.jpg'
+### END CODE HERE ###
+img = image.load_img(img_path, target_size=(64, 64))
+imshow(img)
+
+x = image.img_to_array(img)
+x = np.expand_dims(x, axis=0)
+x = preprocess_input(x)
+
+print(happyModel.predict(x))
+
+
+# other useful functions in Keras
+# model.summary() : prints the details of your layers in a table with the sizes of its inputs/outputs
+# plot_model() : plots your graph in a nice layout. You can even save it as ".png" using SVG() if you'd like to share it on social media.
+
+happy.Model.summary()
+plot_model(happyModel, to_file = 'HappyModel.png')
+SV(model_to_dot(happyModel).create(prog = 'dot', format = 'svg')
+
