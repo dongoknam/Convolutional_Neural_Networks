@@ -1,0 +1,19 @@
+# defining class, anchors, and image
+class_names = read_classes("model_data/coco_classes.txt")
+anchors = read_anchors("model_data/yolo_anchors.txt")
+image_shape = (720., 1280.)    
+
+# load a pre-trained model / weights
+yolo_model = load_model("model_data/yolo.h5")
+yolo_model.summary()
+
+# convert output into usable bounding box tensors
+# yolo_outputs gave you all the predicted boxes of yolo_model in the correct format.
+yolo_outputs = yolo_head(yolo_model.output, anchors, len(class_names))
+
+# filtering boxes
+# You're now ready to perform filtering and select only the best boxes.
+# Let's now call yolo_eval, which you had previously implemented, to do this.
+scores, boxes, classes = yolo_eval(yolo_outputs, image_shape)
+
+# run the graph on the image
